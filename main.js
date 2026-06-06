@@ -1118,7 +1118,8 @@
        滚动触发动画 (Intersection Observer + CSS 类)
        ================================================================ */
     function initScrollAnimations() {
-        const animatedElements = document.querySelectorAll('.animate-item');
+        // 板块名由 initTextDisintegration 单独控制，避免父级淡入淡出与文字碎片动画互相覆盖
+        const animatedElements = document.querySelectorAll('.animate-item:not(.section-heading):not(.section-label)');
 
         if (animatedElements.length === 0) return;
 
@@ -1834,8 +1835,15 @@
             return min + Math.random() * (max - min);
         }
 
+        function keepHostVisible(el) {
+            el.classList.add('visible');
+            el.style.opacity = '1';
+            el.style.transform = 'translate3d(0,0,0)';
+        }
+
         nodes.forEach(function (el) {
             split(el);
+            keepHostVisible(el);
             const spans = Array.from(el.querySelectorAll('.text-frag'));
             if (spans.length === 0) return;
 
@@ -1844,6 +1852,7 @@
                 start: 'top 80%',
                 end: 'bottom 20%',
                 onEnter: function () {
+                    keepHostVisible(el);
                     gsap.killTweensOf(spans);
                     gsap.fromTo(
                         spans,
@@ -1874,6 +1883,7 @@
                     );
                 },
                 onEnterBack: function () {
+                    keepHostVisible(el);
                     gsap.killTweensOf(spans);
                     gsap.fromTo(
                         spans,
@@ -1902,6 +1912,9 @@
                             overwrite: 'auto',
                         }
                     );
+                },
+                onUpdate: function (self) {
+                    if (self.isActive) keepHostVisible(el);
                 },
                 onLeave: function () {
                     gsap.killTweensOf(spans);
